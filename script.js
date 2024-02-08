@@ -50,34 +50,21 @@ function startMessage() {
     displayOnScreen("Hi, this is asoro automobiles", "reciever", []);
   }, 1000);
   setTimeout(() => {
-    displayOnScreen("How may we be of help to your vehicle", "reciever", [
+    displayOnScreen("How may we be of help to your vehicle?", "reciever", [
       "Brake problems",
       "Oil leaks",
       "Flat tire",
       "Overheating",
       "Describe the issue",
     ]);
-
-    // function removeLastOption() {
-    //   var allOfThem = allSpans.querySelectorAll("span");
-    //   console.log(allOfThem[allOfThem.length - 2]);
-    //   allOfThem[allOfThem.length - 2].style.display = "none";
-    // }
-    // allSpans ? removeLastOption() : "";
   }, 2000);
 }
-// startMessage();
 startButton.addEventListener("click", () => {
   allIntros.classList.add("hideIntro");
   startMessage();
-  // allIntros.style.zIndex = 2;
   allIntros.style.display = "none";
 });
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   innerCont.scrollTop += 1000;
-// });
-// const dots = document.querySelectorAll("div");
 
 function addAnimate(role) {
   const superCont = document.createElement("div");
@@ -105,9 +92,7 @@ function addAnimate(role) {
   dots.appendChild(div3);
   cont.appendChild(dots);
   superCont.appendChild(cont);
-  // innerCont.appendChild(superCont);
   const divs = dots.querySelectorAll("div");
-  // console.log(divs);
   setInterval(() => {
     for (var i = 0; i < divs.length; i++) {
       divs[i].classList.toggle("goUp");
@@ -131,19 +116,13 @@ inputMessage.addEventListener("input", (e) => {
   sendButton.classList.remove("blur");
   var animatedCont = addAnimate("sender");
   const anime = document.getElementsByClassName("anime");
-  // if (inputMessage.value == "") {
-  //   innerCont.removeChild(animatedCont);
-  // }
   if (anime.length == 0 && inputMessage.value !== "") {
-    // innerCont.appendChild(animatedCont);
     innerCont.scrollTop += 100;
   }
   if (e.target.value == "") {
     return;
   }
 });
-// setInterval(addAnimate("sender"), 1000);
-// var arr = [];
 var arr = [
   {
     role: "sender",
@@ -224,7 +203,11 @@ const displayOnScreen = (elem, role, options) => {
   if (role == "sender") {
     superCont.classList.add("sender");
     cont.classList.add("senderInner");
-  } else {
+  }else if(role == "others"){
+    superCont.classList.add("recieverMechanics")
+    cont.classList.add("recieverMechanicsInner")
+  }
+   else {
     superCont.classList.add("reciever");
     cont.classList.add("recieverInner");
   }
@@ -304,23 +287,35 @@ function addDivAfterFullStop(text) {
 }
 
 const replyMessage = async (message) => {
-  // console.log(message);
-  var url = "http://localhost:8080/chat";
-  // var url = "https://chatbot-backend-qpc2.onrender.com/chat";
-  if (requestCount == 5) {
+  inputMessage.disabled=true
+  // var url = "http://localhost:8080/chat";
+  var url = "https://chatbot-backend-qpc2.onrender.com/chat";
+  if (requestCount == 4) {
     displayOnScreen(
       `You have exceeded your free trial. Restart the request 
-    or kindly<a href="https://asoroautomotive.com/ppec-products/ai-mechanic-chatbot/" class="paymentLink">SUBSCRIBE</a> to our premium package
+    or kindly <a href="https://asoroautomotive.com/ppec-products/ai-mechanic-chatbot/" class="paymentLink">SUBSCRIBE</a> to our premium package. Click 
+    <a href="https://findmechanics.asoroautomotive.com/?_gl=1*z1hic2*_ga*MjA2MTUzMTU1My4xNzA3MjkxMDY1*_ga_NBETF1R9H5*MTcwNzI5MTA2NS4xLjEuMTcwNzI5MTA3MC4wLjAuMA.." class="paymentLink" target="_">Here</a> to 
+    find available mechanics.
     `,
       "reciever",
       []
     );
+  //  setTimeout(()=>{
+  //   displayOnScreen(
+  //     `Click <a href="https://findmechanics.asoroautomotive.com/?_gl=1*z1hic2*_ga*MjA2MTUzMTU1My4xNzA3MjkxMDY1*_ga_NBETF1R9H5*MTcwNzI5MTA2NS4xLjEuMTcwNzI5MTA3MC4wLjAuMA.." class="paymentLink" target="_">Here</a> to 
+  //     find available mechanics.
+  //   `,
+  //     "others",
+  //     []
+  //   );
+  //  },100)
     sendButton.disabled = true;
     sendButton.classList.add("blur");
     const anime = document.getElementsByClassName("anime")[0];
     anime ? innerCont.removeChild(anime) : console.log("no animations");
     return;
   }
+ 
   await fetch(url, {
     method: "POST",
     headers: {
@@ -330,7 +325,8 @@ const replyMessage = async (message) => {
   })
     .then((res) => res.json())
     .then((res) => {
-      if (res.data == "an error occured") {
+      inputMessage.disabled=false
+      if (res.data == "An error occurred") {
         setTimeout(() => {
           const anime = document.getElementsByClassName("anime")[0];
           anime.textContent = "An error occured. Refresh the page";
@@ -339,14 +335,26 @@ const replyMessage = async (message) => {
           sendButton.classList.add("blur");
         }, 1000);
         return;
-      } else {
+      } else if(res.data.toLowerCase().includes("mechanic") || res.data.toLowerCase().includes("professional")|| res.data.toLowerCase().includes("assistance")){
+        requestCount += 1;
+        displayOnScreen(addDivAfterFullStop(res.data), "reciever", []);
+        setTimeout(()=>{
+          displayOnScreen(
+            `Click <a href="https://findmechanics.asoroautomotive.com/?_gl=1*z1hic2*_ga*MjA2MTUzMTU1My4xNzA3MjkxMDY1*_ga_NBETF1R9H5*MTcwNzI5MTA2NS4xLjEuMTcwNzI5MTA3MC4wLjAuMA.." class="paymentLink" target="_">Here</a> to find available mechanics`,
+            "others",
+            []
+          );
+         },3000)
+      }
+      else {
         requestCount += 1;
         displayOnScreen(addDivAfterFullStop(res.data), "reciever", []);
         // console.log(res.data);
       }
     })
     .catch((err) => {
-      alert("no internet");
+      inputMessage.disabled=false
+      // alert("no internet");
       setTimeout(() => {
         const anime = document.getElementsByClassName("anime")[0];
         anime.textContent = "An error occured. Refresh the page";
@@ -419,3 +427,5 @@ inputMessage.addEventListener("keydown", function (event) {
     sendButton.classList.add("blur");
   }
 });
+
+
